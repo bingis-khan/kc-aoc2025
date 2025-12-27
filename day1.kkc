@@ -1,0 +1,111 @@
+#!run
+use Str
+	Str
+	print-str
+	chars
+use Term
+use Math
+use File
+use Alloc
+use Mem
+
+
+Safe
+	zero-num Int
+	dial Int
+
+inst Str Safe
+	print-str (s)
+		print-str('Safe [ (\(s.dial)) :::: \(s.zero-num) ]')
+
+	# rn not implementing chars is not an error gegegegeg
+
+
+DialDir
+	Left
+	Right
+
+inst Str DialDir
+	print-str (dd)
+		case dd
+			Left
+				print-str('Left')
+			Right
+				print-str('Right')
+
+	chars (dd)
+		case dd
+			Left
+				return 'Left' chars()
+			Right
+				return 'Right' chars()
+
+
+DialTurn
+	dir DialDir
+	amount Int
+
+fn parse-line (s) -> DialTurn
+	s = s chars()
+	dir-s = s head() or-fail('empty string')
+	dir = Mem.undefined()
+	if dir-s == char('L')
+		dir <= Left
+	elif dir-s == char('R')
+		dir <= Right
+	else
+		panic('Could not parse dial turn "\(dir-s)"')
+
+	amount = s drop(1) parse-int()
+		or-fail('failed to parse int from "\(s)"')
+
+	return { dir, amount }
+
+fn turn-dial-1 (d, s)
+	dial = s.dial
+	case d.dir
+		Left
+			dial <= dial - d.amount
+		Right
+			dial <= dial + d.amount
+
+	dial = dial Math.mod(100)
+	zero-num = s.zero-num
+	if dial == 0
+		zero-num <= zero-num + 1
+		
+	return { dial, zero-num }
+
+fn turn-dial-2 (d, s)
+	dial = s.dial
+	zero-num = s.zero-num
+
+	amount = d.amount
+	num-rotations = amount / 100
+	amount = amount - 100 * num-rotations
+	zero-num <= zero-num + num-rotations
+
+	case d.dir
+		Left
+			started-at-zero = dial == 0
+			dial <= dial - amount
+			if dial <= 0 and not started-at-zero
+				zero-num <= zero-num + 1
+		Right
+			dial <= dial + amount
+			if dial >= 100
+				zero-num <= zero-num + 1
+
+	dial = dial Math.mod(100)
+	return { dial, zero-num }
+
+al = Alloc.get-c-allocator()
+safe = Safe { zero-num: 0, dial: 50 }
+
+# stupid filename because we are in a different directory
+'../kc-aoc2025/day1-1'
+	File.read-contents(al)
+	lines()
+	reduce(safe, fn(line, s): line parse-line() turn-dial-2(s))
+	Term.println()
+
