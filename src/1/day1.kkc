@@ -1,4 +1,4 @@
-#!run
+#!/bin/env kkc
 use Str
 	Str
 	print-str
@@ -102,10 +102,8 @@ fn turn-dial-2 (d, s)
 al = Alloc.get-c-allocator()
 safe = Safe { zero-num: 0, dial: 50 }
 
-# stupid filename because we are in a different directory
-'../kc-aoc2025/day1-1'
+'day1-1'
 	File.read-contents(al)
 	lines()
 	reduce(safe, fn(line, s): line parse-line() turn-dial-2(s))
 	Term.println()
-

@@ -1,7 +1,0 @@
-#!/bin/sh
-
-# VERY HACKY GEGEG
-# I haven't figure out how to package the thing yet, so this :)
-cd ../kkc
-zig build run -- ../kc-aoc2025/$@
-cd ../kc-aoc2025

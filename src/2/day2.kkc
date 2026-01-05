@@ -1,0 +1,141 @@
+#!/bin/env kkc
+use Alloc
+use Scan
+	scan-int
+use File
+use List
+	add
+use Iter
+use Math
+	pow
+	mod
+use Str
+
+
+
+# I solved it, but it's bad and slow and complicated. I need to come back to this in the future.
+# The differences in number of digits between ranges are at most 1, so I'm pretty sure the correct solution is to
+# discard (day 1) or partially discard (day 2) odd-digit numbers. This way, we can iterate on numbers, which don't change their counts.
+# currently, I'm dividing the range in two, depending on the number of digits.
+# again, odd digited numbers have different solutions to even digits.
+# (also there is some funny copy bug, which resets the original value)
+
+al = Alloc.idc()
+
+sc =& 'day2-1'
+	File.read-contents(al)
+	Scan.mk()
+
+
+fn num-digits (x Int):
+	Str.count-digits(x)
+
+num-invalid =& 0
+while True
+	num-from = sc scan-int()
+	case num-from
+		None
+			break
+
+		Just(num-from)
+			sc drop'(1)
+			num-to = sc scan-int() or-fail('num')
+			sc drop'(1)
+
+			nf = num-from  # bug!
+			nt = num-to
+			smol-cnt = nf num-digits()
+			big-cnt = nt num-digits()
+
+			diff = big-cnt - smol-cnt
+
+			fn trace(x)
+				println(x)
+				return x
+
+			fn are-all-same (x)
+				x' = x
+				case x' head()
+					None
+						return unreachable()
+					Just(xx)
+						return x' all(fn n: n == xx)
+
+			fn is-palindrome(x)  # not really
+				x' = x
+				cnt = x' num-digits()
+				if cnt == 1
+					return False # funny
+
+				x'' = x
+				if x'' chars() are-all-same()
+					return True
+
+				hcnt = cnt / 2
+				trim = 10 pow(cnt / 2)
+				half = x / trim
+				return x == half * trim + half
+
+
+
+			fn enlarge (x, repeat)
+				x' = x
+				cnt = x' num-digits()
+				return 1 to (repeat) reduce(0, fn (_, b): (b * (10 pow(cnt)) + x))
+
+			fn stuff (what, repeat)
+				if is-palindrome(what)
+					return
+				e = enlarge(what, repeat)
+
+				if e >= num-from and e <= num-to
+					# '\(what) x \(repeat) = \(e) (\(num-from)-\(num-to))' println()
+					num-invalid <&= num-invalid& + e
+
+			fn stuff' (x, f, t, cnt)
+				# println('\(f)-\(t)')
+				what = (f / 10 pow(cnt - x))
+				what' = (t / 10 pow(cnt - x))
+				repeat = cnt / x
+				what to (what') for-each(fn w: stuff(w, repeat))
+			
+			if diff == 0
+				1 to (smol-cnt / 2) for-each(fn x: stuff'(x, num-from, num-to, big-cnt))
+			elif diff == 1
+				1 to (smol-cnt / 2) for-each(fn x: stuff'(x, num-from, 10 pow(smol-cnt) - 1, smol-cnt))
+				1 to (big-cnt / 2) for-each(fn x: stuff'(x, 10 pow(smol-cnt), num-to, big-cnt))
+				pass
+			else
+				unreachable()
+
+
+			# half = (cnt + 1) / 2
+			# println('to \(half)')
+			# trim = 10 pow ((cnt + 1) / 2)
+
+			# upper-from = num-from / trim
+			# upper-to = num-to / trim
+
+			# fn dupa (x Int)
+			# 	x' = x
+			# 	cnt = x' num-digits()
+			# 	'cnt: \(cnt)' println()
+
+			# 	xx = x * 10 pow (cnt) + x
+			# 	xx println()
+			# 	return xx
+
+			# # '\(num-from)-\(num-to): \(upper-from)-\(upper-to)' println()
+			# icnt = upper-from to (upper-to)
+			# 	map(dupa)
+			# 	filter(fn x: x >= num-from and x <= num-to)
+			# 	sum()
+			# invalids <= invalids + icnt
+
+
+			# # num-from num-digits() println()
+			# # num-to num-digits() println()
+
+
+'invalid sum: \(num-invalid)' println()
+
