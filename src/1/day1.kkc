@@ -49,9 +49,9 @@ fn parse-line (s) -> DialTurn
 	s = s chars()
 	dir-s = s head() or-fail('empty string')
 	dir = Mem.undefined()
-	if dir-s == char('L')
+	if dir-s == 'L'
 		dir <= Left
-	elif dir-s == char('R')
+	elif dir-s == 'R'
 		dir <= Right
 	else
 		panic('Could not parse dial turn "\(dir-s)"')

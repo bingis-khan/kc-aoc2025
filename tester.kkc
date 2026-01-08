@@ -1,0 +1,5 @@
+#!/bin/env kkc
+
+al = Alloc.idc()
+'just an example' println()
+# 'src' Sh.dir(id, al) for-each(fn daydir: daydir Sh.dir(al) filter(fn s: s ends-with('kkc') head() or-fail('expect file') Sh.run(al)))

@@ -1,0 +1,78 @@
+#!/bin/env kkc
+al = Alloc.idc()
+
+
+Joltage
+	first Int
+	second Int
+
+fn empty-joltage ():
+	Joltage { first: 0, second: 0 }
+
+fn jolt ({ first, second } Joltage):
+	first * 10 + second
+
+fn part1-reduce-jolt (c Char, j Joltage) -> Joltage
+	ci = c Str.char-int() - '0' Str.char-int()
+	if j.second > j.first
+		return { first: j.second, second: ci }
+
+	elif ci > j.second
+		return { first: j.first, second: ci }
+	else
+		return j
+
+fn part1-max-joltage-from-line (line): line
+	reduce(empty-joltage(), part1-reduce-jolt)
+	jolt()
+
+
+#### Part 2
+# (actually, also solves part 1!)
+
+JoltageUltra ^batteries
+	batts Array batteries Int
+
+fn empty-joltage-ultra ():
+	JoltageUltra { batts: Mem.zeroed() }
+
+fn joltage(j Ptr (JoltageUltra battery-count)):
+	(&j&.batts) Array.as-slice() reduce(0, fn (j, s): s * 10 + j)
+
+fn get-jolt (j Ptr (JoltageUltra battery-count), i Int):
+	(&j&.batts) Array.get(i)
+
+fn print-jolt (j Ptr (JoltageUltra battery-count))
+	(&j&.batts) Array.as-slice() for-each(Term.print)
+	'' println()
+
+fn move-from (j Ptr (JoltageUltra battery-count), from Int,  b Int)
+	arr =& j&.batts
+	from to (battery-count - 2)
+		for-each(fn i: arr Array.set(i, arr Array.get(i + 1)))
+
+	arr Array.set(battery-count - 1, b)
+
+fn add-battery (j Ptr (JoltageUltra battery-count), b Int)
+	i = 0
+	while i < battery-count - 1
+		if j get-jolt(i) < j get-jolt(i + 1)
+			j move-from(i, b)
+			break
+		i <= i + 1
+
+	if j get-jolt(battery-count - 1) < b
+		j move-from(battery-count - 1, b)
+
+
+fn day2-max-joltage-from-line (line)
+	j =& empty-joltage-ultra() as JoltageUltra 12
+	line for-each(fn b: j add-battery(b Str.char-int() - '0' Str.char-int()))
+	return j joltage()
+
+'day3'
+	File.read-contents(al)
+	lines()
+	map(day2-max-joltage-from-line)
+	sum()
+	println()
