@@ -1,0 +1,101 @@
+#!/bin/env kkc
+
+al = Alloc.idc()
+lines = 'day5'
+	File.read-contents(al)
+	lines()
+
+Range
+	from Int
+	to Int
+
+fn mk-range(from, to):
+	Range { from, to }
+
+fn parse-range (s)
+	sc =& Scan.mk(s)
+	from = sc Scan.scan-int() or-fail('from')
+	sc drop'(1)
+	to = sc Scan.scan-int() or-fail('to')
+	return Range { from, to }
+
+ranges = lines
+	take-while(fn s: not s null())
+	map(parse-range)
+println('loaded')
+
+fn in-range(ranges, i): ranges
+	any(fn r: r.from <= i and i <= r.to)
+
+# ingredients = lines
+# 	# note the funny casts (and casting the same element :OOO)
+# 	# unsolved constraints appear when we didn't call next()
+# 	# this is crap, but it'll be automatically solved when we start properly unifying typeclass functions (so element types can be guessed without unifying dat shid)
+# 	drop-while(fn s: not (s as DynStr.DynStr) null())
+# 	drop(1)
+# 	map(fn s: Str2.parse-int(s as DynStr.DynStr) or-fail('could not parse \(s)'))
+
+# part 1
+# ingredients filter(fn i: ranges in-range(i)) count() println()
+
+# ingredients count()
+
+# part 2 (dumb solution)
+
+
+# assumes from <= to
+fn overlaps (r Range, r' Range):
+	(r.to <= r'.to and r.to >= r'.from) or (r'.to <= r.to and r'.to >= r.from)
+
+fn between (lr Range, rr Range):
+	mk-range(Math.min(lr.from, rr.from), Math.max(lr.to, rr.to))
+
+DisjointRanges al
+	drs List al Range
+
+fn print-ranges(ds Ptr (DisjointRanges al))
+	ds&.drs for-each(fn r: println('\(r.from)-\(r.to)'))
+
+fn sum-ranges(ds Ptr (DisjointRanges al)):
+	ds&.drs map(fn { from, to }: to - from + 1) sum()
+
+
+fn insert-range(ds Ptr (DisjointRanges al), r) <= Allocator al
+	i = 0
+	drs =& ds&.drs
+	# i should really make that for-loop struct!
+	while i < drs&.count
+		cr = drs List.get(i)
+		if cr overlaps(r)
+			nu = cr between(r)
+
+			# propagate change!
+			while i + 1 < drs&.count
+				ccr = drs List.get(i + 1)
+				if nu overlaps(ccr)
+					nu <= nu between(ccr)
+					drs List.remove(i + 1)
+				else
+					break
+
+			drs List.set(i, nu)
+			return
+
+		# here, it's between ranges, but does not overlap with any of them
+		elif (i == 0 or drs List.get(i - 1).to < r.from) and (r.to < drs List.get(i).from)
+			drs List.insert(i, r)
+			return
+
+		i <= i + 1
+
+	# if it's here, it means it's the largest range, so insert it no matter what
+	drs List.add(r)
+
+
+ds =& DisjointRanges { drs: List.mk(al) }
+
+fn insert-thing (r)
+	ds insert-range(r)
+
+ranges for-each(insert-thing)
+ds sum-ranges() println()
