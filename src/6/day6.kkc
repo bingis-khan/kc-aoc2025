@@ -1,0 +1,147 @@
+#!/bin/env kkc
+use Str
+	print-str
+	chars
+
+al = Alloc.idc()
+
+lines = 'day6'
+	File.read-contents(al)
+	lines()
+
+
+Op
+	Plus
+	Mult
+
+fn mempty(op)
+	case op
+		Plus
+			return 0
+		Mult
+			return 1
+
+fn mconcat(l, op, r)
+	case op
+		Plus
+			return l + r
+		Mult
+			return l * r
+
+fn try-parse-op(s)
+	if s Str.streq('+')
+		return Plus Just()
+	elif s Str.streq('*')
+		return Mult Just()
+	else
+		return None
+
+inst Str Op
+	print-str(self)
+		case self
+			Plus
+				'Plus' print-str()
+			Mult
+				'Mult' print-str()
+
+	chars (self)
+		case self
+			Plus
+				return 'Plus' chars()
+			Mult
+				return 'Mult' chars()
+
+
+fn part-1()
+	count = lines head() or-fail('empty??') split() count()
+	ops = al Alloc.allocate(count)
+	exprs = 1 to (count) map(fn _: List.mk(al)) to-list(al) List.to-slice()
+
+	fn parse-line(line)
+		spl = line split()
+		ints = spl map(Str2.parse-int)
+
+		if ints head() == Just(None)
+			# we are dealing with operators. last line!
+			spl map(fn s: s try-parse-op() or-fail('could not parse op \(s)')) zip(from(0)) for-each(fn Tuple2(x, i): ops Slice.set(i, x))
+			return
+		else
+			ints map(fn x: x or-fail('bruh')) zip(from(0)) for-each(fn Tuple2(x, i): exprs Slice.get-ptr(i) List.add(x))
+			
+	lines for-each(parse-line)
+
+
+	fn calculate (i)
+		l = exprs Slice.get(i)
+		case ops Slice.get(i)
+			Plus
+				return l sum()
+			Mult
+				return l reduce(1, fn (x, item): x * item)
+
+	return 0 to (count - 1) map(calculate) sum()
+
+fn part-2()
+	opcount = lines head() or-fail('empty?!?!?!') split() count()
+	count = lines head() or-fail('empty??') count()  # part two: now, we need to know columns, so we split on each character.
+	ops = al Alloc.allocate(opcount)
+	exprs = 1 to (count) map(fn _: List.mk(al)) to-list(al) List.to-slice()
+
+	fn parse-line(line)
+		# println(line)
+		c = line head() or-fail('cock') 
+		if c == '+' or c == '*'
+			# we are dealing with operators. last line!
+			line split() map(fn s: s try-parse-op() or-fail('could not parse op \(s)')) zip(from(0)) for-each(fn Tuple2(x, i): ops Slice.set(i, x))
+			return
+		else
+			line zip(from(0)) for-each(fn Tuple2(x, i): exprs Slice.get-ptr(i) List.add(x as Char))
+
+	lines for-each(parse-line)
+
+	fn reduce-num(c, b)
+		md = c Str2.parse-digit()
+		case md
+			None
+				return b
+
+			Just(d)
+				case b
+					None
+						return Just(d)
+					Just(defined)
+						return Just(defined * 10 + d)
+
+	fn number-from-column(i) -> Maybe Int
+		if i >= exprs.count
+			return None
+		else
+			return exprs Slice.get(i) reduce(None, reduce-num)
+
+	fn calculate()
+		opi = 0
+		ci = 0
+
+		total-total = 0
+		while opi < ops.count
+			op = ops Slice.get(opi)
+			total = op mempty()
+			while True
+				mc = number-from-column(ci)
+				ci <= ci + 1
+				case mc
+					Just(c)
+						total <= total mconcat(op, c)
+
+					None
+						total-total <= total-total + total
+						break
+
+			opi <= opi + 1
+
+		return total-total
+	return calculate()
+
+	
+part-1() println()
+part-2() println()
