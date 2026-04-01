@@ -4,15 +4,15 @@ al = Alloc.idc()
 # 'just an example' println()
 # 'src' Sh.dir(id, al) for-each(fn daydir: daydir Sh.dir(al) filter(fn s: s ends-with('kkc') head() or-fail('expect file') Sh.run(al)))
 
-fn run-day(n Int)
+fn run-day (n I32)
 	s = 'src/\(n)'
-	if s StrBuilder.mk-const-str(al) Cnile.chdir() /= 0
+	if s StrBuilder.mk-const-str(al) Cnile.chdir() Mem.cast-on-zeroed() /= 0
 		# or just abort when no more days are left :)
 		panic('Could not chdir() to "\(s)"')
 
-	'./day\(n).kkc' Sh.run(al)
+	'kkc day\(n).kkc --backend c -o prog' Sh.run(al)
 
-	if '../..' Cnile.chdir() /= 0
+	if '../..' Cnile.chdir() Mem.cast-on-zeroed() /= 0
 		panic('Could not chdir() back (dafuk?????)')
 
 from(1) for-each(run-day)

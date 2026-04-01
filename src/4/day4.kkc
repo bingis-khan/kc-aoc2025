@@ -3,11 +3,11 @@
 al = Alloc.idc()
 
 
-fn is-occupied (grid, x Int, y Int)
+fn is-occupied (grid, x I32, y I32)
 	if x < 0 or y < 0
 		return False
 	else
-		return grid drop(y) map(fn ll: ll drop(x) head() or-else(False)) head() or-else(False)
+		return grid drop(Mem.i32-size(y)) map(fn ll: ll drop(Mem.i32-size(x)) head() or-else(False)) head() or-else(False)
 
 grid = 'day4'
 	File.read-contents(al)
@@ -17,7 +17,7 @@ grid = 'day4'
 	List.to-slice()
 
 
-size = grid.count
+size = Mem.size-i32(grid.count)
 println('size: \(size)')
 
 fn count-neighbors (x, y): (x - 1) to (x + 1)
@@ -38,13 +38,13 @@ fn count-neighbors (x, y): (x - 1) to (x + 1)
 
 
 # Part Two: imperative now, don't make it dogshit slow.
-fn is-occupied (x Int, y Int)
+fn is-occupied (x I32, y I32)
 	if x < 0 or x >= size or y < 0 or y >= size
 		return False
 
-	return grid Slice.get(y) Slice.get(x)
+	return grid Slice.get(Mem.i32-size(y)) Slice.get(Mem.i32-size(x))
 
-fn count-neighbors (x Int, y Int)
+fn count-neighbors (x I32, y I32)
 	xx = x - 1
 	neighbors = 0
 	while xx <= x + 1
@@ -76,7 +76,7 @@ fn remove-paper ()
 						# this stuff is part 2 specific
 						# part 2 was 28 seconds total, which is bad, but whatever.
 						changed <= True
-						p = grid Slice.get(y) Slice.get-ptr(x)
+						p = grid Slice.get(Mem.i32-size(y)) Slice.get-ptr(Mem.i32-size(x))
 						p <&= False
 
 				y <= y + 1
@@ -84,6 +84,8 @@ fn remove-paper ()
 
 		if not changed
 			return smol
+
+	return unreachable()
 
 remove-paper() println()
 # count-neighbors(0, 1) println()

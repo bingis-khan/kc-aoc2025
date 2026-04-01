@@ -3,8 +3,8 @@ al = Alloc.idc()
 
 
 Joltage
-	first Int
-	second Int
+	first I32
+	second I32
 
 fn empty-joltage ():
 	Joltage { first: 0, second: 0 }
@@ -13,7 +13,7 @@ fn jolt ({ first, second } Joltage):
 	first * 10 + second
 
 fn part1-reduce-jolt (c Char, j Joltage) -> Joltage
-	ci = c Str.char-int() - '0' Str.char-int()
+	ci = c Str.char-i32() - '0' Str.char-i32()
 	if j.second > j.first
 		return { first: j.second, second: ci }
 
@@ -31,29 +31,29 @@ fn part1-max-joltage-from-line (line): line
 # (actually, also solves part 1!)
 
 JoltageUltra ^batteries
-	batts Array batteries Int
+	batts Array batteries I32
 
 fn empty-joltage-ultra ():
 	JoltageUltra { batts: Mem.zeroed() }
 
-fn joltage(j Ptr (JoltageUltra battery-count)):
-	(&j&.batts) Array.as-slice() reduce(0, fn (j, s): s * 10 + j)
+fn joltage(j Ptr (JoltageUltra battery-count)) -> I64:
+	(&j&.batts) Array.as-slice() reduce(0, fn (j, s): s * 10 + Mem.i32-i64(j))
 
-fn get-jolt (j Ptr (JoltageUltra battery-count), i Int):
-	(&j&.batts) Array.get(i)
+fn get-jolt (j Ptr (JoltageUltra battery-count), i I32):
+	(&j&.batts) Array.get(Mem.i32-size(i))
 
 fn print-jolt (j Ptr (JoltageUltra battery-count))
 	(&j&.batts) Array.as-slice() for-each(Term.print)
 	'' println()
 
-fn move-from (j Ptr (JoltageUltra battery-count), from Int,  b Int)
+fn move-from (j Ptr (JoltageUltra battery-count), from I32,  b I32)
 	arr =& j&.batts
 	from to (battery-count - 2)
-		for-each(fn i: arr Array.set(i, arr Array.get(i + 1)))
+		for-each(fn i: arr Array.set(Mem.i32-size(i), arr Array.get(Mem.i32-size(i + 1))))
 
-	arr Array.set(battery-count - 1, b)
+	arr Array.set(Mem.i32-size(battery-count - 1), b)
 
-fn add-battery (j Ptr (JoltageUltra battery-count), b Int)
+fn add-battery (j Ptr (JoltageUltra battery-count), b I32)
 	i = 0
 	while i < battery-count - 1
 		if j get-jolt(i) < j get-jolt(i + 1)
@@ -65,9 +65,9 @@ fn add-battery (j Ptr (JoltageUltra battery-count), b Int)
 		j move-from(battery-count - 1, b)
 
 
-fn day2-max-joltage-from-line (line)
+fn day2-max-joltage-from-line (line) -> I64
 	j =& empty-joltage-ultra() as JoltageUltra 12
-	line for-each(fn b: j add-battery(b Str.char-int() - '0' Str.char-int()))
+	line for-each(fn b: j add-battery(b Str.char-i32() - '0' Str.char-i32()))
 	return j joltage()
 
 'day3'

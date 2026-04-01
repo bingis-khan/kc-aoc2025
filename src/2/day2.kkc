@@ -22,15 +22,15 @@ use Str
 
 al = Alloc.idc()
 
-sc =& 'day2-1'
+sc =& 'day2-test'
 	File.read-contents(al)
 	Scan.mk()
 
 
-fn num-digits (x Int):
+fn num-digits (x):
 	Str.count-digits(x)
 
-num-invalid =& 0
+num-invalid =& 0 as I64
 while True
 	num-from = sc scan-int()
 	case num-from
@@ -81,21 +81,21 @@ while True
 			fn enlarge (x, repeat)
 				x' = x
 				cnt = x' num-digits()
-				return 1 to (repeat) reduce(0, fn (_, b): (b * (10 pow(cnt)) + x))
+				return 1 to (repeat) reduce(0 as I64, fn (_, b): (b * Mem.cast-on-zeroed(10 pow(cnt)) + Mem.cast-on-zeroed(x)))
 
 			fn stuff (what, repeat)
 				if is-palindrome(what)
 					return
 				e = enlarge(what, repeat)
 
-				if e >= num-from and e <= num-to
+				if e >= Mem.cast-on-zeroed(num-from) and e <= Mem.cast-on-zeroed(num-to)
 					# '\(what) x \(repeat) = \(e) (\(num-from)-\(num-to))' println()
-					num-invalid <&= num-invalid& + e
+					num-invalid <&= num-invalid& + Mem.cast-on-zeroed(e)
 
-			fn stuff' (x, f, t, cnt)
+			fn stuff' (x, f I64, t I64, cnt)
 				# println('\(f)-\(t)')
-				what = (f / 10 pow(cnt - x))
-				what' = (t / 10 pow(cnt - x))
+				what = Mem.i64-i32(f / 10 pow(cnt - x))
+				what' = Mem.i64-i32(t / 10 pow(cnt - x))
 				repeat = cnt / x
 				what to (what') for-each(fn w: stuff(w, repeat))
 			

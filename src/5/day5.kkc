@@ -6,8 +6,8 @@ lines = 'day5'
 	lines()
 
 Range
-	from Int
-	to Int
+	from I64
+	to I64
 
 fn mk-range(from, to):
 	Range { from, to }

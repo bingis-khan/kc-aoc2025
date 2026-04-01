@@ -55,7 +55,7 @@ inst Str Op
 fn part-1()
 	count = lines head() or-fail('empty??') split() count()
 	ops = al Alloc.allocate(count)
-	exprs = 1 to (count) map(fn _: List.mk(al)) to-list(al) List.to-slice()
+	exprs = 1 to (Mem.size-i32(count)) map(fn _: List.mk(al)) to-list(al) List.to-slice()
 
 	fn parse-line(line)
 		spl = line split()
@@ -63,15 +63,16 @@ fn part-1()
 
 		if ints head() == Just(None)
 			# we are dealing with operators. last line!
-			spl map(fn s: s try-parse-op() or-fail('could not parse op \(s)')) zip(from(0)) for-each(fn Tuple2(x, i): ops Slice.set(i, x))
+			spl map(fn s: s try-parse-op() or-fail('could not parse op \(s)')) zip(from(0)) for-each(fn Tuple2(x, i): ops Slice.set(Mem.i32-size(i), x))
 			return
 		else
-			ints map(fn x: x or-fail('bruh')) zip(from(0)) for-each(fn Tuple2(x, i): exprs Slice.get-ptr(i) List.add(x))
+			ints map(fn x: x or-fail('bruh')) zip(from(0)) for-each(fn Tuple2(x, i): exprs Slice.get-ptr(Mem.i32-size(i)) List.add(x))
 			
 	lines for-each(parse-line)
 
 
 	fn calculate (i)
+		i = Mem.i32-size(i)
 		l = exprs Slice.get(i)
 		case ops Slice.get(i)
 			Plus
@@ -79,23 +80,23 @@ fn part-1()
 			Mult
 				return l reduce(1, fn (x, item): x * item)
 
-	return 0 to (count - 1) map(calculate) sum()
+	return 0 to (Mem.size-i32(count) - 1) map(calculate) sum()
 
 fn part-2()
 	opcount = lines head() or-fail('empty?!?!?!') split() count()
 	count = lines head() or-fail('empty??') count()  # part two: now, we need to know columns, so we split on each character.
 	ops = al Alloc.allocate(opcount)
-	exprs = 1 to (count) map(fn _: List.mk(al)) to-list(al) List.to-slice()
+	exprs = 1 to (Mem.size-i32(count)) map(fn _: List.mk(al)) to-list(al) List.to-slice()
 
 	fn parse-line(line)
 		# println(line)
 		c = line head() or-fail('cock') 
 		if c == '+' or c == '*'
 			# we are dealing with operators. last line!
-			line split() map(fn s: s try-parse-op() or-fail('could not parse op \(s)')) zip(from(0)) for-each(fn Tuple2(x, i): ops Slice.set(i, x))
+			line split() map(fn s: s try-parse-op() or-fail('could not parse op \(s)')) zip(from(0)) for-each(fn Tuple2(x, i): ops Slice.set(Mem.i32-size(i), x))
 			return
 		else
-			line zip(from(0)) for-each(fn Tuple2(x, i): exprs Slice.get-ptr(i) List.add(x as Char))
+			line zip(from(0)) for-each(fn Tuple2(x, i): exprs Slice.get-ptr(Mem.i32-size(i)) List.add(x as Char))
 
 	lines for-each(parse-line)
 
@@ -112,26 +113,26 @@ fn part-2()
 					Just(defined)
 						return Just(defined * 10 + d)
 
-	fn number-from-column(i) -> Maybe Int
+	fn number-from-column(i) -> Maybe I32
 		if i >= exprs.count
 			return None
 		else
 			return exprs Slice.get(i) reduce(None, reduce-num)
 
-	fn calculate()
+	fn calculate() -> I64
 		opi = 0
 		ci = 0
 
-		total-total = 0
+		total-total = 0 as I64
 		while opi < ops.count
 			op = ops Slice.get(opi)
-			total = op mempty()
+			total = op mempty() Mem.i32-i64()
 			while True
 				mc = number-from-column(ci)
 				ci <= ci + 1
 				case mc
 					Just(c)
-						total <= total mconcat(op, c)
+						total <= total mconcat(op, Mem.i32-i64(c))
 
 					None
 						total-total <= total-total + total

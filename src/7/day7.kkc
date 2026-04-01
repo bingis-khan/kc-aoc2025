@@ -15,6 +15,7 @@ s-loc = first-line
 	filter(fn cn: cn fst() == 'S')
 	head() or-fail('could not locate S')
 	snd()
+	Mem.i32-size()
 
 # preprocess splitters
 # assume same size for each level
@@ -28,19 +29,19 @@ splits
 
 lines
 	zip(from(0))
-	for-each(fn Tuple2(l, h): l zip(from(0)) filter(fn t: t fst() == '^') map(snd) for-each(fn w: splits Slice.get-ptr(w) List.add(Tuple2(h, 0))))
+	for-each(fn Tuple2(l, h): l zip(from(0)) filter(fn t: t fst() == '^') map(snd) for-each(fn w: splits Slice.get-ptr(Mem.i32-size(w)) List.add(Tuple2(h, 0))))
 
-fn do-a-split-part-1 (beg, h)
+fn do-a-split-part-1 (beg Size, h)
 	case splits Slice.get(beg) zip(from(0)) drop-while(fn sh: sh fst() fst() <= h) head()
 		None
 			return 0
 		Just(Tuple2(Tuple2(s, hits), i))
 			if hits > 0
 				return 0
-			splits Slice.get-ptr(beg) List.set(i, Tuple2(s, 1))
+			splits Slice.get-ptr(beg) List.set(Mem.i32-size(i), Tuple2(s, 1))
 			return 1 + do-a-split-part-1(beg - 1, s) + do-a-split-part-1(beg + 1, s)
 
-fn do-a-split-part-2(beg, h)
+fn do-a-split-part-2(beg, h) -> I64
 	case splits Slice.get(beg) List.addresses() drop-while(fn sh: sh& fst() <= h) head()
 		None
 			return 1
