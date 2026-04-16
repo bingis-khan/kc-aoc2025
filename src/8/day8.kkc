@@ -1,0 +1,94 @@
+use LiminalCake
+	Vector
+	distance-to
+	map-vector
+use Mem
+	i64-i32
+	i32-i64
+	i64-f64
+	size-i32
+	i32-size
+
+fn parse-junction-box (line) -> Vector 3 I32
+	sc =& Scan.mk(line)
+	x = sc Scan.scan-int() or-fail('x') i64-i32()
+	sc drop'(1)
+	y = sc Scan.scan-int() or-fail('y') i64-i32()
+	sc drop'(1)
+	z = sc Scan.scan-int() or-fail('z') i64-i32()
+	return [x, y, z]
+	 
+
+Distance
+	dist F64
+	l Size
+	r Size
+
+inst Ord Distance
+	cmp (l, r): cmp(l.dist, r.dist)
+
+al = Alloc.idc()
+boxes = 'day'
+	File.read-contents(al)
+	lines()
+	map(parse-junction-box)
+	List.to-list(al)
+	List.to-slice()
+num-boxes = boxes.count
+
+circuits = 0 to (num-boxes size-i32() - 1)
+	List.to-list(al)
+	List.to-slice()
+
+
+# cartesian is broken for some reason!!
+distances =& List.mk(al)
+for l in 0 to (num-boxes size-i32() - 1)
+	for r in (l + 1) to (num-boxes size-i32() - 1)
+		l = l i32-size()
+		r = r i32-size()
+		fr = boxes[r] map-vector(fn x: x i32-i64() i64-f64()) as Vector 3 F64
+		fl = boxes[l] map-vector(fn x: x i32-i64() i64-f64())
+		distances List.add(Distance { dist: distance-to(fl, fr), l, r })
+
+distances = distances& List.to-slice()
+Slice.sort(distances)
+
+
+fn set-circuit(old, nu)
+	if old == nu
+		return
+
+	for cp in circuits Slice.addresses()
+		if cp& == old
+			cp <&= nu
+
+last-connection = None
+for d in distances # take(10)
+	l = boxes[d.l]
+	r = boxes[d.r]
+	# println('\(d.dist): \(l) = \(r)')
+	if circuits[d.l] /= circuits[d.r]
+		last-connection <= Just((d.l, d.r))
+	set-circuit(circuits[d.l], circuits[d.r])
+
+occurences =& Hash.mk(al) as Hash Allocator I32 I32
+for (c, i) in circuits zip(from(0))
+	case occurences Hash.lookup-ptr(c)
+		None
+			occurences Hash.insert(c, 1)
+		Just(xptr)
+			xptr <&= xptr& + 1
+
+num-occs = occurences
+	Hash.entries()
+	map(snd)
+	List.to-list(al)
+	List.to-slice()
+
+Slice.sort(num-occs)
+Slice.reverse(num-occs)
+
+# result = num-occs take(3) Iter.product()
+result2 = last-connection Misc.fmap-maybe(fn ((l, r)): boxes[l][0] * boxes[r][0]) or-fail('conn')
+println(result2)
