@@ -1,0 +1,190 @@
+# fn day1()
+# 	Machine
+# 		target-size I32
+# 		target-state U32
+# 		buttons Slice U32
+
+# 		# joltage
+
+# 	fn draw-state(s U32, sz I32)
+# 		Str.print-str('[')
+# 		for x in s Bits.bits'(Just(sz))
+# 			if x
+# 				Str.print-str('#')
+# 			else
+# 				Str.print-str('.')
+# 		println(']')
+
+# 	fn find-configuration(m Machine, al Allocator) -> I32
+# 		sz = m.target-size
+
+# 		stateq =& List.mk(al)
+# 		i = 0
+# 		stateq List.add((0, 0))
+# 		while True
+# 			si = stateq[i]
+# 			s = si fst()
+# 			l = si snd()
+# 			i <= i + 1
+
+# 			for b in m.buttons
+# 				nus = s Bits.u32-xor(b)
+# 				if nus == m.target-state
+# 					stateq List.free()
+# 					return l + 1
+# 				stateq List.add((nus, l + 1))
+
+# 		unreachable()
+
+
+# 	al = Alloc.idc()
+# 	'day-real'
+# 		File.read-contents(al)
+# 		lines()
+# 		map(fn(line))
+# 			sc =& Scan.mk(line as DynStr.DynStr)
+
+# 			ts =& List.mk(al)
+# 			sc Scan.try-char('[') assert('expect [')
+# 			while not sc Scan.try-char(']')
+# 				c = sc Scan.char() or-fail('expect char')
+# 				if c == '#'
+# 					ts List.add(True)
+# 				elif c == '.'
+# 					ts List.add(False)
+# 				else
+# 					panic('unexpected "\(c)"')
+# 			sc drop'(1)
+# 			ts = ts& List.to-slice()
+# 			target-size = ts.count size-i32()
+
+# 			ts Slice.reverse()
+# 			target-state = 0
+# 			for x in ts
+# 				target-state <= target-state Math.lshift(1)
+# 				if x
+# 					target-state <= target-state Bits.u32-or(1)
+# 			al Alloc.free(ts)
+
+# 			buttons =& List.mk(al)
+# 			while sc Scan.try-char('(')
+# 				button = 0
+# 				while True
+# 					i = sc Scan.int() or-fail('expect index')
+# 					button <= button Bits.set-bit(i i64-i32())
+
+# 					if sc Scan.try-char(')')
+# 						break
+
+# 					sc Scan.try-char(',') assert('expect comma')
+
+# 				sc drop'(1)
+# 				buttons List.add(button)
+
+# 			buttons = buttons& List.to-slice()
+
+# 			return Machine { target-size, target-state, buttons }
+# 		map(fn m: find-configuration(m, al))
+# 		sum()
+# 		println()
+
+Button
+	Button (Slice Size)
+Machine
+	target-joltage Slice I32
+	buttons Slice Button
+
+inst Ord Button
+	cmp (Button(l) _, Button(r) _): r.count cmp (l.count)
+
+inst Str Button
+	print-str (Button(b)): Str.print-str(b)
+	chars (Button(b)): b chars()
+
+al = Alloc.idc()
+fn joltage-config(m Machine)
+	s = al Alloc.default(m.target-joltage.count, 0)
+	fn rec(i I32, button-i Size) -> Maybe I32
+		all-match = True
+		for (t, x) in m.target-joltage zip(s)
+			if t < x
+				return None
+			elif t > x
+				all-match <= False
+				break
+
+		if all-match
+			return Just(i)
+
+		for Button(b) in m.buttons drop(button-i) # presorted! so technically, we should reach the first ones the quickest.
+			max-b-app = 9999
+			for idx in b
+				max-b-app <= Math.min(m.target-joltage[idx] - s[idx], max-b-app)
+
+			for idx in b # do
+				s Slice.set(idx, s[idx] + max-b-app)
+			for app-num in 1 to (max-b-app)
+				app-num = max-b-app - app-num + 1
+				case rec(i + app-num, button-i + 1)
+					None
+						pass
+					Just(r)
+						return Just(r)
+				for idx in b # undo
+					s Slice.set(idx, s[idx] - 1)
+
+		return None
+
+
+	res = rec(0, 0)
+	al Alloc.free(s)
+	return res or-fail('expect result')
+
+'day-test'
+	File.read-contents(al)
+	lines()
+	map(fn(line))
+		sc =& Scan.mk(line as DynStr.DynStr)
+
+		# ignore target state
+		sc Scan.try-char('[') assert('expect [')
+		while not sc Scan.try-char(']')
+			sc drop'(1)
+		sc drop'(1)
+
+
+		buttons =& List.mk(al)
+		while sc Scan.try-char('(')
+			button =& List.mk(al)
+			while True
+				i = sc Scan.int() or-fail('expect index')
+				button List.add(i i64-size())
+
+				if sc Scan.try-char(')')
+					break
+
+				sc Scan.try-char(',') assert('expect comma')
+
+			sc drop'(1)
+			buttons List.add(button& List.to-slice() Button())
+
+		buttons = buttons& List.to-slice()
+		Slice.sort(buttons)
+
+		target-joltage =& List.mk(al)
+		sc Scan.try-char('{') assert('expect {')
+		while True
+			i = sc Scan.int() or-fail('expect index')
+			target-joltage List.add(i i64-i32())
+
+			if sc Scan.try-char('}')
+				break
+			sc Scan.try-char(',') assert('expect comma')
+
+		target-joltage = target-joltage& List.to-slice()
+
+		return Machine { target-joltage, buttons }
+	map(joltage-config)
+	for-each(println)
+
+# day2()

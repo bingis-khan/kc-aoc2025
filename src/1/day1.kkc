@@ -1,8 +1,5 @@
 #!/bin/env kkc
-use Str
-	Str
-	print-str
-	chars
+use Str (Str(*))
 use Term
 use Math
 use File
@@ -20,6 +17,7 @@ inst Str Safe
 		print-str('Safe [ (\(s.dial)) :::: \(s.zero-num) ]')
 
 	# rn not implementing chars is not an error gegegegeg
+	chars (s _): 'Safe [ (\(s.dial)) :::: \(s.zero-num) ]' chars()
 
 
 DialDir

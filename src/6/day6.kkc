@@ -59,7 +59,7 @@ fn part-1()
 
 	fn parse-line(line)
 		spl = line split()
-		ints = spl map(Str2.parse-int)
+		ints = spl map(parse-int)
 
 		if ints head() == Just(None)
 			# we are dealing with operators. last line!
@@ -101,7 +101,7 @@ fn part-2()
 	lines for-each(parse-line)
 
 	fn reduce-num(c, b)
-		md = c Str2.parse-digit()
+		md = c Char.parse-digit()
 		case md
 			None
 				return b

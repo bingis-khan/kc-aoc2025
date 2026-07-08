@@ -12,8 +12,9 @@ fn empty-joltage ():
 fn jolt ({ first, second } Joltage):
 	first * 10 + second
 
+fn parse-digit(c): c Char.parse-digit() or-fail('could not parse digit')
 fn part1-reduce-jolt (c Char, j Joltage) -> Joltage
-	ci = c Str.char-i32() - '0' Str.char-i32()
+	ci = c parse-digit()
 	if j.second > j.first
 		return { first: j.second, second: ci }
 
@@ -67,7 +68,7 @@ fn add-battery (j Ptr (JoltageUltra battery-count), b I32)
 
 fn day2-max-joltage-from-line (line) -> I64
 	j =& empty-joltage-ultra() as JoltageUltra 12
-	line for-each(fn b: j add-battery(b Str.char-i32() - '0' Str.char-i32()))
+	line for-each(fn b: j add-battery(b parse-digit()))
 	return j joltage()
 
 'day3'

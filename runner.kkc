@@ -6,6 +6,7 @@ al = Alloc.idc()
 
 fn run-day (n I32)
 	s = 'src/\(n)'
+	println(s)
 	if s StrBuilder.mk-const-str(al) Cnile.chdir() Mem.cast-on-zeroed() /= 0
 		# or just abort when no more days are left :)
 		panic('Could not chdir() to "\(s)"')

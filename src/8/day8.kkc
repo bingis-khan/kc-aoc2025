@@ -3,11 +3,7 @@ use LiminalCake
 	distance-to
 	map-vector
 use Mem
-	i64-i32
-	i32-i64
-	i64-f64
-	size-i32
-	i32-size
+	i64-i32, i32-i64, size-i32, i32-size, int-f64
 
 fn parse-junction-box (line) -> Vector 3 I32
 	sc =& Scan.mk(line)
@@ -47,8 +43,8 @@ for l in 0 to (num-boxes size-i32() - 1)
 	for r in (l + 1) to (num-boxes size-i32() - 1)
 		l = l i32-size()
 		r = r i32-size()
-		fr = boxes[r] map-vector(fn x: x i32-i64() i64-f64()) as Vector 3 F64
-		fl = boxes[l] map-vector(fn x: x i32-i64() i64-f64())
+		fr = boxes[r] map-vector(fn x: x int-f64()) as Vector 3 F64
+		fl = boxes[l] map-vector(fn x: x int-f64())
 		distances List.add(Distance { dist: distance-to(fl, fr), l, r })
 
 distances = distances& List.to-slice()

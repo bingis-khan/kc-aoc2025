@@ -1,0 +1,67 @@
+# FUNNY SLOW (we don't save the parsed file), but it's ONE LINE YO!
+al = Alloc.idc()
+points = 'day9-real'
+	File.read-contents(al)
+	lines()
+	map(fn(line))
+		sc =& Scan.mk(line)
+		x = sc Scan.int() or-fail('expect int')
+		sc drop'(1)
+		y = sc Scan.int() or-fail('expect int')
+		return (x, y)
+	to-list(al)
+	List.to-slice()
+
+# first part
+points
+	combinations()
+	map(fn(((lx, ly), (rx, ry))): (Math.abs(lx - rx) + 1) * (Math.abs(ly - ry) + 1))
+	maximum()
+	or-fail('expect non-empty')
+	println()
+
+
+
+# second part
+fn goes-inside(((x1, y1), (x2, y2)), ((rx1, ry1), (rx2, ry2)))
+	min-rx = Math.min(rx1, rx2)
+	max-rx = Math.max(rx1, rx2)
+	min-ry = Math.min(ry1, ry2)
+	max-ry = Math.max(ry1, ry2)
+	if x1 == x2 # horizontal
+		x = x1
+		if x <= min-rx or max-rx <= x
+			return False # dont care
+
+		min-y = Math.min(y1, y2)
+		max-y = Math.max(y1, y2)
+		if min-y >= max-ry or max-y <= min-ry
+			return False
+
+		return True
+
+	else # vertical
+		y = y1
+		if y <= min-ry or max-ry <= y
+			return False # dont care
+
+		min-x = Math.min(x1, x2)
+		max-x = Math.max(x1, x2)
+		if min-x >= max-rx or max-x <= min-rx
+			return False
+
+		return True
+
+
+lines = points zip(points drop(1) append(points[0])) to-list(al) List.to-slice()
+
+fn any-line-goes-inside(rect): lines any(fn line: line goes-inside(rect))
+
+# TODO: we can speed it up if we sort them first from highest to lowest and then go through them checking the 'any-line-goes-inside'
+points
+	combinations()
+	filter(fn rect: not any-line-goes-inside(rect))
+	map(fn(((lx, ly), (rx, ry))): (Math.abs(lx - rx) + 1) * (Math.abs(ly - ry) + 1))
+	maximum()
+	or-fail('empty')
+	println()
